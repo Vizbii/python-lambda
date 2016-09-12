@@ -10,6 +10,11 @@ description: My first lambda function
 aws_access_key_id:
 aws_secret_access_key:
 
+# Lambda Configuration Settings
+# role: lambda_basic_execution
 # dist_directory: dist
 # timeout: 15
 # memory_size: 512
+
+# (Optional) Pip Settings
+# extra_index_url:
