@@ -129,8 +129,12 @@ def build(src, local_package=None):
     function_name = cfg.get('function_name')
     output_filename = "{0}-{1}.zip".format(timestamp(), function_name)
 
+    # Handle if we needed to add an "extra-index-url" to our requirements file
+    # to successfully download required packages.
+    extra_index_url = cfg.get('extra_index_url', None)
+
     path_to_temp = mkdtemp(prefix='aws-lambda')
-    pip_install_to_target(path_to_temp, local_package)
+    pip_install_to_target(path_to_temp, local_package, extra_index_url)
 
     # Gracefully handle whether ".zip" was included in the filename or not.
     output_filename = ('{0}.zip'.format(output_filename)
@@ -191,7 +195,7 @@ def get_handler_filename(handler):
     return '{0}.py'.format(module_name)
 
 
-def pip_install_to_target(path, local_package=None):
+def pip_install_to_target(path, local_package=None, extra_index_url=None):
     """For a given active virtualenv, gather all installed pip packages then
     copy (re-install) them to the path provided.
 
@@ -210,7 +214,13 @@ def pip_install_to_target(path, local_package=None):
             r = r.replace('-e ','')
 
         print('Installing {package}'.format(package=r))
-        pip.main(['install', r, '-t', path, '--ignore-installed'])
+        pip_command_arguments = ['install', r, '-t', path, '--ignore-installed']
+
+        # Add optional pip arguments (--extra-index-url) to the base pip command
+        if extra_index_url is not None and extra_index_url != '':
+            pip_command_arguments += ['--extra-index-url', extra_index_url]
+
+        pip.main(pip_command_arguments)
 
     if local_package is not None:
         pip.main(['install', local_package, '-t', path])
