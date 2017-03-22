@@ -367,8 +367,8 @@ def function_exists(cfg, function_name):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
-    functions = client.list_functions().get('Functions', [])
-    for fn in functions:
-        if fn.get('FunctionName') == function_name:
-            return True
-    return False
+    try:
+        client.get_function(FunctionName=function_name)
+        return True
+    except botocore.errorfactory.ResourceNotFoundException as e:
+        return False
